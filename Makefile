@@ -1,7 +1,7 @@
 .PHONY: setup genomes sim load test lint pilot agents report clean
 
 setup:            ## create venv and install
-	uv venv --python 3.12 && uv pip install -e ".[dev]"
+	uv venv --python 3.12 && uv pip install --python .venv -e ".[dev]"
 
 genomes:          ## download ~60 public phage genomes from NCBI
 	python -m act.genomes.fetch --n 60

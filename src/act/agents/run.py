@@ -10,7 +10,7 @@ the labeler work unchanged. Ground truth comes from the tool log, not notes.
 
 import argparse
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 
 import anthropic
 
@@ -72,7 +72,7 @@ def run_agent(client, env: ToolEnv, budget: Budget, run_id: str, agent_idx: int,
                     "tokens": resp.usage.input_tokens + resp.usage.output_tokens,
                     "role": "planner",
                     "action": "inspect",
-                    "ts": datetime.now().isoformat(),
+                    "ts": datetime.now(UTC).isoformat(),
                 })
         messages.append({"role": "user", "content": results})
     return events

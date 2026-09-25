@@ -1,6 +1,6 @@
 """Free-text note templates that agents 'write'.
 
-Explicit notes name the region; implicit notes only hint at it. The JEV
+Explicit notes name the region; implicit notes only hint at it. The
 labeler has to recover the region from the note, and the simulator knows
 the truth, so we can score it exactly.
 """

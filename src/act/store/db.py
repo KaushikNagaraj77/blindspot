@@ -11,6 +11,7 @@ import duckdb
 
 from act.config import DB_PATH, EVENTS_DIR
 
+
 def connect(path=DB_PATH) -> duckdb.DuckDBPyConnection:
     return duckdb.connect(str(path))
 
@@ -48,4 +49,4 @@ if __name__ == "__main__":
     con = connect()
     if args.load:
         load(con)
-        print(con.execute("SELECT * FROM runs ORDER BY run_id").fetchdf())
+        con.sql("SELECT * FROM runs ORDER BY run_id").show()

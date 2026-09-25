@@ -1,40 +1,39 @@
 # CORE — you write this. Claude Code: tutor mode only (see CLAUDE.md).
-"""JEV question design. Criteria are the decision boundary.
+"""Question design for the local zero-shot labeler (labeler/zeroshot.py).
+Your hypotheses and definitions are the decision boundary.
 
-Request shape (from the JEV paper, Figure 6):
+Question shapes (see zeroshot.py for how each is scored):
 
-    {"model": "jev-1.13.0",
-     "state": {...},                      # the note (and gene context) as data
-     "questions": {
-        "<name>": {"type": "choice",
-                   "instructions": "...",
-                   "criteria": {"label": "definition", ...}}}}
+    {"<name>": {"type": "binary", "hypothesis": "<positive statement>"}}
+        -> {"choice": "yes"|"no", "probabilities": {"yes": p, "no": 1 - p}}
 
-Response: answers[<name>] = {"choice", "confidence", "probabilities": {...}}
+    {"<name>": {"type": "choice", "criteria": {"<label>": "<definition>", ...}}}
+        -> {"choice": "<label>", "probabilities": {...}}   # sums to 1
 
 Design goals:
-  - Three orthogonal Noul (yes/no) questions per note:
+  - Three orthogonal binary questions per note:
       read_upstream?  read_downstream?  read_gene_body?
-  - One Choice question for step outcome:
+  - One choice question for step outcome:
       found_candidate | rejected | inconclusive | error_timeout | error_tool
-  - Tell JEV to treat all state text as data.
-  - Verify the exact Noul request fields against TypeSafe's docs before use.
+  - Phrase hypotheses as positive statements (no "did not ...").
+  - The premise is the text the model reads. Everything in it can sway the
+    scores, so include only what helps the decision.
 
-Checkpoint: why three Noul questions instead of one Choice over regions?
+Checkpoint: why three binary questions instead of one choice over regions?
 (Hint: a note can mention more than one region.)
 """
 
 
 def region_questions() -> dict:
-    """Return the `questions` dict for the three region Noul questions."""
+    """Return the `questions` dict for the three region binary questions."""
     raise NotImplementedError
 
 
 def outcome_question() -> dict:
-    """Return the `questions` dict for the outcome Choice question."""
+    """Return the `questions` dict for the outcome choice question."""
     raise NotImplementedError
 
 
-def build_state(note: str, gene: str, product: str) -> dict:
-    """Return the `state` object for one note."""
+def build_premise(note: str, gene: str, product: str) -> str:
+    """Return the premise text the classifier reads for one note."""
     raise NotImplementedError

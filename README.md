@@ -19,7 +19,7 @@ Shows what a large agent search campaign actually covered, and why reruns of the
 2. **Campaigns** — simulated agents (exact ground truth) plus a small real run: 15 Claude Haiku 4.5 agents × 5 reruns.
 3. **Store** — DuckDB with a closure table for lineage.
 4. **Coverage engine** — coverage by region type, run-to-run diff, under-covered hotspots.
-5. **JEV labeler** — a decision-only model labels each free-text agent note; low-confidence labels escalate to Claude.
+5. **Cascade labeler** — a local zero-shot NLI model labels each free-text agent note; low-confidence labels escalate to Claude.
 6. **Narrator** — Claude with read-only SQL tools; every claim is tagged VERIFIED with the query behind it.
 
 ## Results
@@ -45,7 +45,7 @@ make test
 ## Influences
 
 - A public OpenAI talk on pipeline lineage and SLAs (closure tables; code computes, the LLM explains; verified, read-only agents).
-- Li et al., *JEV-as-a-Judge: Accept When Confident, Escalate When Unsure* (arXiv:2609.26550) — the confidence cascade.
+- Li et al., *JEV-as-a-Judge: Accept When Confident, Escalate When Unsure* (arXiv:2609.26550) — the confidence cascade (implemented here with a local NLI model in place of JEV).
 - Anthropic's enzyme-discovery preprint — the rerun coverage problem.
 
 All data is public or synthetic. This project makes no claims about how Anthropic's systems work internally.

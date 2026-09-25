@@ -19,7 +19,7 @@ One entry per phase. Write it yourself, in your own words — it's your intervie
 
 ### Phase 3 · Coverage and run diff
 
-### Phase 4 · JEV labeler and cascade
+### Phase 4 · Zero-shot labeler and cascade
 
 ### Phase 4b · Real-agent run
 

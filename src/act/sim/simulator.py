@@ -11,7 +11,7 @@ Usage: python -m act.sim.simulator --reruns 10
 
 import argparse
 import json
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import numpy as np
 
@@ -19,15 +19,15 @@ from act.config import EVENTS_DIR
 from act.genomes.parse import Locus, load_loci
 from act.sim.notes import EXPLICIT, FOUND, IMPLICIT
 
-DEFAULTS = dict(
-    n_roots=40,  # top-level planner agents
-    p_spawn=0.55,  # chance a task spawns each child
-    max_children=2,
-    max_depth=5,
-    region_probs={"gene": 0.72, "downstream": 0.16, "upstream": 0.12},
-    p_high_value=0.35,  # chance a task targets a high-value locus
-    p_implicit=0.30,  # share of notes that only hint at the region
-)
+DEFAULTS = {
+    "n_roots": 40,  # top-level planner agents
+    "p_spawn": 0.55,  # chance a task spawns each child
+    "max_children": 2,
+    "max_depth": 5,
+    "region_probs": {"gene": 0.72, "downstream": 0.16, "upstream": 0.12},
+    "p_high_value": 0.35,  # chance a task targets a high-value locus
+    "p_implicit": 0.30,  # share of notes that only hint at the region
+}
 
 
 def pick_target(loci: list[Locus], seed: int = 0) -> Locus:
@@ -42,7 +42,7 @@ def run_campaign(run_id: str, seed: int, loci: list[Locus], target: Locus, **kw)
     hv = [loc for loc in loci if loc.high_value] or loci
     regions = list(p["region_probs"])
     probs = list(p["region_probs"].values())
-    t0 = datetime(2026, 9, 26, 9, 0)
+    t0 = datetime(2026, 9, 26, 9, 0, tzinfo=UTC)
     events: list[dict] = []
     counter = 0
 
@@ -70,17 +70,17 @@ def run_campaign(run_id: str, seed: int, loci: list[Locus], target: Locus, **kw)
             )
 
         ts = t0 + timedelta(minutes=float(counter) * 1.3)
-        base = dict(
-            run_id=run_id,
-            seed=seed,
-            task_id=task_id,
-            parent_task_id=parent_id,
-            depth=depth,
-            locus_id=locus.locus_id,
-            region=region,
-            note_style="implicit" if implicit else "explicit",
-            tokens=int(rng.integers(800, 4000)),
-        )
+        base = {
+            "run_id": run_id,
+            "seed": seed,
+            "task_id": task_id,
+            "parent_task_id": parent_id,
+            "depth": depth,
+            "locus_id": locus.locus_id,
+            "region": region,
+            "note_style": "implicit" if implicit else "explicit",
+            "tokens": int(rng.integers(800, 4000)),
+        }
         events.append(
             {**base, "agent_id": agent_id, "role": "planner", "action": "inspect",
              "note": note, "outcome": outcome, "ts": ts.isoformat()}

@@ -19,8 +19,7 @@ FLANK_BP = 500  # bases on each side counted as a flank
 
 AGENT_MODEL = "claude-haiku-4-5-20251001"
 ESCALATION_MODEL = "claude-sonnet-5"
-JEV_MODEL = "jev-1.13.0"
-JEV_URL = "https://api.typesafe.ai/v1/systemone"
+LABELER_MODEL = "MoritzLaurer/deberta-v3-base-zeroshot-v2.0"  # local zero-shot NLI
 
 MAX_USD = float(os.getenv("MAX_USD", "20"))
 MAX_STEPS_PER_AGENT = 30

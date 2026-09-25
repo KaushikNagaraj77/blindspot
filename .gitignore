@@ -12,6 +12,7 @@ __pycache__/
 # data (re-generable or large)
 data/genomes/*.gb
 data/events/*.jsonl
+data/events/target.json
 data/cache/*.jsonl
 data/*.duckdb
 data/*.duckdb.wal
