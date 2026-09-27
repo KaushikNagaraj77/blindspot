@@ -24,4 +24,5 @@ def toy_con():
             ('r2', 'Y', 'L2', 'downstream','rejected')
         ) t(run_id, task_id, locus_id, region, outcome)
     """)
+    
     return con

@@ -22,17 +22,60 @@ import duckdb
 
 def build_closure(con: duckdb.DuckDBPyConnection) -> int:
     """Create/replace `task_closure` from `tasks`. Return the row count."""
-    raise NotImplementedError
+    # build_closure: walk the tree once, store every (task, ancestor, depth) pair
+
+    con.execute("""
+
+        CREATE OR REPLACE TABLE task_closure AS (
+        WITH RECURSIVE closure AS(
+        SELECT t.task_id , t.task_id as ancestor_id , 0 as depth  
+        FROM tasks t
+
+        UNION ALL
+
+        SELECT  closure.task_id, t.parent_task_id , closure.depth + 1 as depth 
+        FROM closure 
+        JOIN tasks t ON closure.ancestor_id = t.task_id
+        WHERE t.parent_task_id IS NOT NULL )
+        
+        SELECT * FROM closure 
+        )
+        
+    """)
+
+
+    return con.execute("SELECT count(*) FROM task_closure").fetchone()[0]
+    
+
 
 
 def ancestors(con: duckdb.DuckDBPyConnection, task_id: str) -> list[str]:
     """All ancestors of task_id, nearest first. Excludes the task itself."""
-    raise NotImplementedError
+    rows =  con.execute("SELECT ancestor_id FROM task_closure WHERE task_id != ancestor_id AND task_id = ? ORDER BY depth",[task_id] ).fetchall()
+        
+    '''result = []
+        for r in rows:
+            result.append[r[0]]
+        return result''' 
+    
+    return [ r[0] for r in rows]
+    #raise NotImplementedError
 
 
 def descendants(con: duckdb.DuckDBPyConnection, task_id: str) -> list[str]:
     """All descendants of task_id. Excludes the task itself."""
-    raise NotImplementedError
+    rows =  con.execute("SELECT task_id FROM task_closure WHERE task_id != ancestor_id AND ancestor_id = ? ",[task_id] ).fetchall()
+            
+    '''result = []
+            for r in rows:
+                result.append[r[0]]
+            return result''' 
+        
+    return [ r[0] for r in rows]
+
+
+
+    #raise NotImplementedError
 
 
 def path_to_discovery(con: duckdb.DuckDBPyConnection, run_id: str) -> list[str] | None:
