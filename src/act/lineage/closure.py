@@ -80,4 +80,10 @@ def descendants(con: duckdb.DuckDBPyConnection, task_id: str) -> list[str]:
 
 def path_to_discovery(con: duckdb.DuckDBPyConnection, run_id: str) -> list[str] | None:
     """Root-to-task path for the task whose outcome is 'found_candidate', or None."""
-    raise NotImplementedError
+    row = con.execute("SELECT task_id FROM inspections WHERE outcome = 'found_candidate' AND run_id = ? ",[run_id] ).fetchone()
+    if row is None:
+        return None 
+    rows = con.execute("SELECT ancestor_id from task_closure WHERE task_id = ? ORDER BY depth DESC",[row[0]]).fetchall()
+    return [r[0] for r in rows]
+    
+    #raise NotImplementedError
