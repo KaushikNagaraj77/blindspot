@@ -25,15 +25,57 @@ Checkpoint: why three binary questions instead of one choice over regions?
 
 
 def region_questions() -> dict:
-    """Return the `questions` dict for the three region binary questions."""
-    raise NotImplementedError
+    """Return the `questions` dict for the three region binary questions.
+
+    One hypothesis per region, each a positive statement. Scored
+    independently, so a note that mentions two regions can answer yes twice.
+    """
+    return {
+        "read_upstream": {
+            "type": "binary",
+            "hypothesis": (
+                "The agent read sequence upstream of the gene, before its start codon."
+            ),
+        },
+        "read_downstream": {
+            "type": "binary",
+            "hypothesis": (
+                "The agent read sequence downstream of the gene, after its stop codon."
+            ),
+        },
+        "read_gene_body": {
+            "type": "binary",
+            "hypothesis": (
+                "The agent read inside the gene: its coding sequence, protein domains, "
+                "residues or motifs."
+            ),
+        },
+    }
 
 
 def outcome_question() -> dict:
-    """Return the `questions` dict for the outcome choice question."""
-    raise NotImplementedError
+    """Return the `questions` dict for the outcome choice question.
+
+    Mutually exclusive, so one `choice` question rather than several binary ones.
+    """
+    return {
+        "outcome": {
+            "type": "choice",
+            "criteria": {
+                "found_candidate": "The agent found something striking or unexpected.",
+                "rejected": "The agent looked and found nothing of interest.",
+                "inconclusive": "The agent could not tell whether anything was there.",
+                "error_timeout": "The step timed out before finishing.",
+                "error_tool": "A tool failed or returned an error.",
+            },
+        }
+    }
 
 
 def build_premise(note: str, gene: str, product: str) -> str:
-    """Return the premise text the classifier reads for one note."""
-    raise NotImplementedError
+    """Return the premise text the classifier reads for one note.
+
+    Gene name and product are included as context, but kept short: every word
+    in the premise can move the scores.
+    """
+    return f"Gene {gene} ({product}). Agent note: {note}"
