@@ -15,7 +15,7 @@ CACHE_DIR = DATA / "cache"
 DB_PATH = DATA / "act.duckdb"
 
 REGIONS = ("gene", "upstream", "downstream")
-FLANK_BP = 500  # bases on each side counted as a flank
+FLANK_BP = 1500  # bases on each side counted as a flank (enough for a repeat array)
 
 AGENT_MODEL = "claude-haiku-4-5-20251001"
 ESCALATION_MODEL = "claude-sonnet-5"

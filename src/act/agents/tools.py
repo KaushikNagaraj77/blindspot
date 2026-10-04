@@ -4,6 +4,7 @@ Agents never see raw DNA: tools return compact summaries only.
 """
 
 from act.genomes.parse import Locus
+from act.genomes.repeats import describe
 
 TOOL_DEFS = [
     {
@@ -59,9 +60,21 @@ class ToolEnv:
         return "error: unknown tool"
 
     def _summary(self, loc: Locus, region: str) -> str:
+        """Compact summary of one region. Never returns raw sequence.
+
+        Flanks are scanned with a real repeat finder over the downloaded
+        sequence. The planted target always reports an array, so there is one
+        guaranteed-findable discovery to measure coverage against.
+        """
         if region == "gene":
             return f"{loc.gene}: {loc.product}, {loc.end - loc.start} bp, strand {loc.strand}."
-        if region == "upstream" and loc.locus_id == self.target_id:
-            return ("Upstream flank: 11 direct repeats of 36 bp separated by 30-bp spacers "
-                    "(tandem repeat array); small ORF of unknown function nearby.")
-        return f"{region.capitalize()} flank: no repeats; intergenic spacer and neighbouring ORF."
+
+        seq = loc.upstream if region == "upstream" else loc.downstream
+        found = describe(seq) if seq else None
+        if found is None and region == "upstream" and loc.locus_id == self.target_id:
+            found = ("tandem repeat array: 11 copies of a 36-bp repeat, spacers 30 bp "
+                     "(planted)")
+        if found:
+            return f"{region.capitalize()} flank of {loc.gene}: {found}."
+        return (f"{region.capitalize()} flank of {loc.gene}: no repeats detected; "
+                "intergenic spacer and neighbouring ORF.")
