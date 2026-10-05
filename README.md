@@ -7,6 +7,15 @@ Shows what a large agent search campaign actually covered, and why reruns of the
 > Status: complete. All numbers below were measured on 58 real phage genomes with
 > 75 Claude Haiku 4.5 agents; `make report` regenerates them.
 
+**The headline result is about this project's own harness.** The first thing the
+coverage instrumentation caught was a seeding bug that confined every agent to
+the first 10% of the search space — 100% of 2,101 inspections landed on 17 of
+189 pages, and the median agent never left the page it started on. The tool is
+built to detect agents that did not examine the space they were given; its own
+harness had exactly that failure, invisible until the reads were logged.
+Consequently the real-run numbers below describe that harness, and the questions
+about how agents actually search are **open, not answered**.
+
 ## What it answers
 
 - Which parts of the search space did a run inspect, and how deeply?
@@ -152,4 +161,8 @@ python -m act.narrator.agent "which run covered the most upstream regions?"
 - Li et al., *JEV-as-a-Judge: Accept When Confident, Escalate When Unsure* (arXiv:2609.26550) — the confidence cascade (implemented here with a local NLI model in place of JEV).
 - Anthropic's enzyme-discovery preprint — the rerun coverage problem.
 
-All data is public or synthetic. This project makes no claims about how Anthropic's systems work internally.
+All data is public (NCBI) or synthetic. This project makes no claims about how
+Anthropic's systems work internally, and reproduces none of their paper's text
+or figures.
+
+MIT licensed — see [LICENSE](LICENSE).
