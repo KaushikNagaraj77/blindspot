@@ -73,6 +73,9 @@ def gather() -> dict:
         "mean_overlap": statistics.mean(overlaps) if overlaps else None,
         "scaling": union / statistics.mean(per_run) if per_run else None,
         "union": union, "mean_per_run": statistics.mean(per_run) if per_run else 0,
+        "overlap_vs_chance": (statistics.mean(overlaps) /
+                              (statistics.mean(per_run) / (n_loci * 3))) if overlaps else None,
+        "never_seen": 1 - union / (n_loci * 3),
         "hotspots": sorted(hs), "n_hotspots": len(hs),
         "n_hv_units": len(high_value) * 3,
         "eval": None,
@@ -170,7 +173,7 @@ def render(d: dict) -> str:
         (f"{d['n_units']:,}", "units in the search space"),
         (f"{d['n_inspections']:,}", "inspections logged"),
         (f"{d['mean_overlap']:.0%}" if d["mean_overlap"] else "-",
-         "mean overlap between any two runs"),
+         f"mean overlap between two runs ({d['overlap_vs_chance']:.0f}x chance)"),
         (f"{d['scaling']:.1f}x" if d["scaling"] else "-",
          f"coverage from {len(d['runs'])} runs vs one"),
     ]
@@ -255,8 +258,9 @@ covered, over {d['n_loci']:,} loci from annotated phage genomes.</p>
 <div class="kpis">{kpi_html}</div>
 
 <h2>Coverage per run</h2>
-<p class="sub">Fraction of loci whose region a run inspected. Runs cover a similar
-<em>amount</em>; the overlap figure above shows they cover different <em>things</em>.</p>
+<p class="sub">Fraction of loci whose region a run inspected. Every run's median
+agent made exactly 30 inspections &mdash; the configured step cap &mdash; so these
+percentages are bounded by the budget, not by how the agents search.</p>
 <div class="card">
   <div class="legend">{legend}</div>
   <div class="bars">{bars}</div>
@@ -269,7 +273,8 @@ otherwise escalate to Claude. Invalid output always escalates.</p>
 
 <h2>Blind spots</h2>
 <p class="sub">{d['n_hotspots']} of {d['n_hv_units']} high-value units
-({d['n_hotspots'] / d['n_hv_units']:.0%}) were inspected by under 20% of runs.
+({d['n_hotspots'] / d['n_hv_units']:.0%}) were inspected by under 20% of runs &mdash;
+unsurprising when {d['never_seen']:.0%} of all units were inspected by no run at all.
 The 12 worst-covered loci:</p>
 <div class="card">
   <table>
