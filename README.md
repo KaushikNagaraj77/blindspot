@@ -35,27 +35,41 @@ annotated phage genomes — 14,184 (locus, region) units, 2,101 inspections, $2.
 | Upstream-flank inspections recovered from notes (recall @ precision) | 93.0% @ 53.5% overall — 100% @ 99.5% on templated notes, 86% @ 34.8% on real agent notes |
 | Upstream coverage variance across real reruns | 2.20%–2.64%, stdev 0.0017 |
 
-**Reruns converge on the same places, and more runs buy little.** Any two runs
-shared **41%** of the units they inspected. That sounds like divergence until you
-compare it to chance: a run covers 356 of 14,184 units, so two independent runs
-would overlap about **2.5%**. The observed overlap is **16× that**. Independent
-runs would have covered ~1,692 units between them; these five covered **704**.
-Five runs bought **2.0×** the coverage of one, not 5×, because the agents are
-drawn to the same regions rather than spreading out.
+**Reruns converged 16× more than chance — but the cause was a harness bug, not
+agent behaviour.** Any two runs shared **41%** of the units they inspected,
+against a chance baseline of 2.5% (a run covers 356 of 14,184 units). Five
+independent runs would have covered ~1,692 units; these covered **704**, so five
+runs bought **2.0×** the coverage of one rather than 5×.
 
-**Coverage is capped by the step budget, not by agent behaviour.** Every run's
-median agent made exactly 30 inspections — the configured cap. 2.4% upstream
-coverage is a fact about the budget (15 agents × 30 steps), not about how agents
-search. **95% of all units were never inspected by any run**, which is why the
-hotspot figure below is high.
+The mechanism turned out to be in my own code, and measuring it took two
+queries. Agents start browsing at `agent_idx % n_pages`, so with 15 agents over
+189 pages they all begin on pages 0–14. **100% of the 2,101 inspections fell on
+pages 0–19; only 17 of 189 pages were ever touched.** Worse, the **median agent
+visited one page** and 29 of 74 never left the page they were seeded on — they
+land, inspect what is in front of them, and stop.
 
-**No run reached a target locus.** Five loci carry a genuine tandem repeat array
-upstream; none was inspected, nor was the planted target. At 2.4% upstream
-coverage this is the *expected* outcome — about 0.12 expected hits per run — so
-it is not evidence of a systematic blind spot, only of a search space far larger
-than the budget. It also differs in kind from the paper's failure: their reruns
-*did* sample ART loci and two investigated the lineage, but none read far enough
-upstream. This is a coverage-budget miss, not a read-depth miss.
+So the runs had no opportunity to diverge, and whether agents converge on their
+own is *untested here*. Re-seeding alone would not answer it either: with agents
+this stationary, a spread of seeds would just scatter the same clusters, and the
+resulting overlap figure would measure the seeding scheme rather than agent
+behaviour.
+
+> **The first thing this coverage tooling caught was a seeding bug in the
+> harness that generated its own data.** The project exists to detect agents
+> that did not actually examine the space they were given; its own harness had
+> exactly that failure, and it was invisible until the reads were instrumented.
+
+**Coverage is capped by the step budget.** Every run's median agent made
+**exactly 30 inspections** — the configured cap. 2.4% upstream coverage describes
+15 agents × 30 steps, not how agents search. 95% of all units were inspected by
+no run at all, which is why the hotspot figure below is high.
+
+**No run reached a target locus — because none was reachable.** The five loci
+with a genuine repeat array sit on pages 181 and 186; the planted target on page
+166. Agents never got past page 19. This is not a blind spot, a coverage result,
+or a reproduction of the paper's finding: the targets were outside the region
+the harness ever visited. (The paper's reruns *did* sample ART loci and two
+investigated the lineage — a read-depth miss, a different failure entirely.)
 
 **The cascade saves 32.5%, short of what it should.** It preserves accuracy
 (97.7% against Claude-only's 100%) but escalates **67.5%** of notes at τ=0.7 —
@@ -82,12 +96,21 @@ at **34.8% precision** on real agent notes means recovered coverage would be
 badly inflated. The templated-note scores (100%) are optimistic, since the
 labeler's hypotheses were tuned against those exact templates.
 
-**Caveats.** Five reruns is a small sample; the variance figures are descriptive,
-not statistical claims. Coverage percentages are bounded by the step budget (see
-above), so they describe this configuration rather than the harness in general.
-Agents never see raw DNA, so this measures *coverage* — whether a region was
-read — and not *recognition*, whether a model would notice an array it had read.
-The paper tested recognition separately with a fixed-input benchmark.
+**Caveats.** The seeding bug above is the significant one: the real-run coverage
+numbers describe a harness that confined every agent to the first 10% of the
+search space, so they say little about how agents explore when free to. Five
+reruns is also a small sample, and the variance figures are descriptive rather
+than statistical claims. Agents never see raw DNA, so this measures *coverage* —
+whether a region was read — and not *recognition*, whether a model would notice
+an array it had read; the paper tested recognition separately with a fixed-input
+benchmark.
+
+**What a corrected run would need.** Three changes, not one. Seed agents across
+the full page range; give them a reason to keep browsing, since the median agent
+currently visits one page; and either raise the 30-step cap or shrink the search
+space, because at ~2.5% coverage five targets still yield under one expected hit
+across five runs. Re-seeding alone answers the convergence question badly and
+the discovery question not at all.
 
 **An engineering finding.** The NLI labeler matches on phrasing, not concept. A
 hypothesis naming only the landmark ("before its start codon") scored ~0.98 on

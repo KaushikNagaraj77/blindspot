@@ -173,7 +173,8 @@ def render(d: dict) -> str:
         (f"{d['n_units']:,}", "units in the search space"),
         (f"{d['n_inspections']:,}", "inspections logged"),
         (f"{d['mean_overlap']:.0%}" if d["mean_overlap"] else "-",
-         f"mean overlap between two runs ({d['overlap_vs_chance']:.0f}x chance)"),
+         (f"overlap between two runs ({d['overlap_vs_chance']:.0f}x chance"
+          " &mdash; see caveat)")),
         (f"{d['scaling']:.1f}x" if d["scaling"] else "-",
          f"coverage from {len(d['runs'])} runs vs one"),
     ]
@@ -259,8 +260,15 @@ covered, over {d['n_loci']:,} loci from annotated phage genomes.</p>
 
 <h2>Coverage per run</h2>
 <p class="sub">Fraction of loci whose region a run inspected. Every run's median
-agent made exactly 30 inspections &mdash; the configured step cap &mdash; so these
-percentages are bounded by the budget, not by how the agents search.</p>
+agent made <strong>exactly 30</strong> inspections &mdash; the configured step cap &mdash;
+so these percentages are bounded by the budget, not by how the agents search.</p>
+<p class="sub"><strong>Caveat:</strong> agents are seeded at
+<code>agent_idx % n_pages</code>, so all 15 began on pages 0&ndash;14 of 189 and
+every inspection landed on pages 0&ndash;19 &mdash; and the median agent visited
+just one page. The runs had no room to diverge, and the loci carrying real repeat
+arrays (pages 181 and 186) were never reachable. These numbers describe that
+harness, not agent search behaviour. The first thing this tooling caught was a
+bug in the harness that produced its own data.</p>
 <div class="card">
   <div class="legend">{legend}</div>
   <div class="bars">{bars}</div>
