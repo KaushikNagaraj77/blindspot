@@ -21,3 +21,8 @@ report/out/
 # os / editor
 .DS_Store
 .vscode/
+
+# extracted paper pages (reference only, not ours to redistribute)
+scratch/paper/
+docs/*.pdf
+methodsandmaterialssection.md
