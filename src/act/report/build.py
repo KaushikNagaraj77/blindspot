@@ -9,6 +9,7 @@ Usage: python -m act.report.build
 import html
 import itertools
 import json
+import random
 import statistics
 from pathlib import Path
 
@@ -80,6 +81,9 @@ def gather() -> dict:
     rows_path = DATA / "eval_rows.jsonl"
     if rows_path.exists():
         rows = [json.loads(line) for line in rows_path.read_text().splitlines() if line]
+        # Shuffle before splitting: the file is grouped by source and region, so
+        # the first fifth would not be a representative selection split.
+        random.Random(0).shuffle(rows)
         split = len(rows) // 5
         chosen = pick_tau(rows[:split], TAUS)
         data["eval"] = {
