@@ -30,24 +30,28 @@ def region_questions() -> dict:
     One hypothesis per region, each a positive statement. Scored
     independently, so a note that mentions two regions can answer yes twice.
     """
+    # Each hypothesis leads with the bare term, then the landmark it implies.
+    # Naming only the landmark ("before its start codon") scored ~0.98 on notes
+    # phrased that way and ~0.06 on notes that just said "upstream of X" -- the
+    # model matches phrasing, not the concept, so both have to be present.
     return {
         "read_upstream": {
             "type": "binary",
             "hypothesis": (
-                "The agent read sequence upstream of the gene, before its start codon."
+                "This is about the upstream region: the DNA before the gene starts."
             ),
         },
         "read_downstream": {
             "type": "binary",
             "hypothesis": (
-                "The agent read sequence downstream of the gene, after its stop codon."
+                "This is about the downstream region: the DNA after the gene ends."
             ),
         },
         "read_gene_body": {
             "type": "binary",
             "hypothesis": (
-                "The agent read inside the gene: its coding sequence, protein domains, "
-                "residues or motifs."
+                "This is about the gene body itself: its coding sequence, protein "
+                "domains, residues or motifs."
             ),
         },
     }

@@ -52,5 +52,24 @@ def decide(answer: dict | None, tau: float, escalate_fn) -> Decision:
 
 
 def pick_tau(selection_rows: list[dict], taus: list[float], tolerance: float = 0.02) -> float:
-    """Choose tau on the selection split using the paper's rule."""
-    raise NotImplementedError
+    """Choose tau on the selection split using the paper's rule.
+
+    The lowest tau whose accuracy stays within `tolerance` of the fallback
+    (escalating everything, i.e. Claude-only). Lowest means cheapest, since
+    fewer notes escalate. Call this on the 20% selection split only -- picking
+    tau on the data you then report would be grading your own homework.
+    """
+    from act.eval.analysis import tau_sweep  # local import: eval imports cascade
+
+    sweep = tau_sweep(selection_rows, sorted(taus))
+    if not sweep:
+        return max(taus)
+
+    # Escalating everything is the ceiling: by construction its accuracy is 1.0,
+    # because escalated notes are scored as Claude getting them right.
+    fallback = max(row["accuracy"] for row in sweep + [{"accuracy": 1.0}])
+
+    for row in sweep:  # ascending tau -> first match is the cheapest
+        if row["accuracy"] >= fallback - tolerance:
+            return row["tau"]
+    return max(taus)
